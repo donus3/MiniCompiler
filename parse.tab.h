@@ -48,8 +48,9 @@
      LOOP = 264,
      ASSIGN = 265,
      TO = 266,
-     ERROR = 267,
-     EQUAL = 268
+     END = 267,
+     ERROR = 268,
+     EQUAL = 269
    };
 #endif
 
@@ -60,15 +61,16 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 21 "parse.y"
+#line 30 "parse.y"
 
 	int dval;
-	char *strval;
+	char* strval;
+	int chval;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 72 "parse.tab.h"
+#line 74 "parse.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

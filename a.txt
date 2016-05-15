@@ -1,0 +1,7 @@
+Show "HellothisismafirstProgram"
+Show 40
+$a = 6-5
+$b = 1
+if($a == $b){
+	Show "equal"
+}

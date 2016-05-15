@@ -1,30 +1,36 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-extern int yylex ();
-extern void yyerror ( char *);
+#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <queue>
+#include <stack>
+#include <string>
+#include "asmGenerator.cpp" 
+#include "ast.cpp"
 
-typedef struct var_int{
-	char name;
-	int val;
-	struct var_int* next;
-}var_int;
+using namespace std;
 
-typedef struct var_sting{
-	char *name;
-	char val[128];
-	int len;
-	struct var_string* next;
-}var_string;
-var_int* head_int;
-var_string* head_string;
+extern "C" int yylex();
+extern "C" int yyparse();
+extern "C" FILE *yyin;
+void yyerror(const char *);
+
+int isReginit[27] = {};
+int lcount = 0;
+int icount = 0;
+int scount = 0;
+queue<string> bodycode;
+queue<string> initcode;
+queue<string> initstring;
+stack<NodeAst*> nodes;
 
 %}
 
+//%define parse.error verbose
 %union{
 	int dval;
-	char *strval;
-	char chval;
+	char* strval;
+	int chval;
 }
 
 %token <dval> NUM
@@ -38,102 +44,201 @@ var_string* head_string;
 %type <dval> exp cond
 %type <chval> var
 %start result
+
 %%
-result :
-	result stas END 						{ printf("> "); }	
-	| 	result if END 						{ printf("> "); }
-	| 	result loop END 					{ printf("> "); }
-	|
-	;
-stas :
-	| stas sta ';'
-sta :
-	| SHOW exp 								{}
-	| SHOW STRING 							{}
-	| ID ASSIGN exp							{   if(!hasVar($1))
-												{
-													enQInt($1,$3);
-												}
-												else
-												{
+result 	:
+		|	result stas 					{
 
+											}							
+		| 	result if END 					{
+
+											}					
+		| 	result loop END 				{
+
+											}									
+		;
+
+stas 	: 
+		| 	 stas sta END
+		;
+
+sta 	:
+			SHOW exp 							{
+													NodeAst* nodeExp = nodes.top();
+													nodes.pop();	
+													bodycode.push(show(nodeExp->getAddress()));
 												}
-											}
-	;
-if :
-	 IF '(' cond ')' '{' stas '}'			{
-	 										}
-	;
-loop : LOOP ID ':' INT TO INT '{' stas '}' 	
-	;
-exp: NUM
-	| ID   									{ $$ = arr[$1]; }
-	| exp '-' exp							{ $$ = $1 - $3; }
-	| exp '+' exp 							{ $$ = $1 + $3; }
-	| exp '*' exp 							{ $$ = $1 * $3; }
-	| exp '/' exp 							{ $$ = $1 / $3; }
-	| exp '%' exp							{ $$ = $1 % $3;	}
-	| '-' exp								{ $$ = (-1) * $2; }
-	| '(' exp ')'							{ $$ = $2; }
-	;
-cond : NUM
-	| exp EQUAL exp 						{ $$ = $1 == $3; }
-	;
-var : ID 			{ if(hasVar($1))
-						{
-							$$=$1;
-						}
-						else
-						{
-							printf("Variable %c never assign\n",$1+97);
-						}
-					}   
-	;     
+		| 	SHOW str 							{
+													bodycode.push(showString(scount++));
+												}
+		| 	var ASSIGN exp						{
+													NodeAst* nodeExp = nodes.top();
+													nodes.pop();
+													NodeAst* nodeVar = nodes.top();
+													nodes.pop();
+													bodycode.push(assign(nodeExp->getAddress(),nodeVar->getAddress()));
+												}
+		;
+str     :
+			STRING								{
+													initstring.push(init_string($1,scount));
+												}
+		;
+if 		:
+	 		IF '(' cond ')' '{' END stas '}'	{ 
+	 												bodycode.push(asif(icount++));
+	 											}
+		;
+conloop	:
+			var NUM TO NUM						{
+													bodycode.push(constn($2));
+													bodycode.push(constn($4));
+
+													NodeAst* nodeVar = nodes.top();
+													nodes.pop();
+
+													bodycode.push(asloophead(nodeVar->getAddress(),lcount));
+												}
+		;
+loop 	: 
+			LOOP conloop '{' END stas '}' 		{
+													bodycode.push(loopend(lcount));
+														
+												}	
+		;
+
+exp		: 
+			NUM									{ 	
+													NodeAst* nconst = new NodeAst(-1,$1,'c',NULL,NULL);
+													bodycode.push(constn($1));
+													nodes.push(nconst);
+												}
+		| 	ID   								{	
+													NodeAst* var = new NodeAst($1,-1,'v',NULL,NULL);
+													if(isReginit[$1] == 0){
+														initcode.push(init_var(var->getAddress()));
+														isReginit[$1] = 1;
+													}
+													nodes.push(var);
+												}
+		| 	exp '-' exp							{	
+													NodeAst* right = nodes.top();
+													nodes.pop();
+													NodeAst* left = nodes.top();
+													nodes.pop();
+													NodeAst* subn = new NodeAst(-1,-1,'s',left,right);
+													nodes.push(subn);
+													bodycode.push(sub(left->getAddress(),right->getAddress()));
+												}
+
+		| 	exp '+' exp 						{
+													NodeAst* right = nodes.top();
+													nodes.pop();
+													NodeAst* left = nodes.top();
+													nodes.pop();
+													NodeAst* addn = new NodeAst(-1,-1,'a',left,right);
+													nodes.push(addn);
+													bodycode.push(add(left->getAddress(),right->getAddress()));
+												}
+		| 	exp '*' exp 						{
+													NodeAst* right = nodes.top();
+													nodes.pop();
+													NodeAst* left = nodes.top();
+													nodes.pop();
+													NodeAst* muln = new NodeAst(-1,-1,'m',left,right);
+													nodes.push(muln);
+													bodycode.push(mul(left->getAddress(),right->getAddress()));
+												}
+		| 	exp '/' exp							{	
+													NodeAst* right = nodes.top();
+													nodes.pop();
+													NodeAst* left = nodes.top();
+													nodes.pop();
+													NodeAst* divn = new NodeAst(-1,-1,'d',left,right);
+													nodes.push(divn);
+													bodycode.push(divide(left->getAddress(),right->getAddress()));
+												}
+		| 	exp '%' exp							{
+													NodeAst* right = nodes.top();
+													nodes.pop();
+													NodeAst* left = nodes.top();
+													nodes.pop();
+													NodeAst* modn = new NodeAst(-1,-1,'M',left,right);
+													nodes.push(modn);
+													bodycode.push(mod(left->getAddress(),right->getAddress()));	
+												}
+		| 	'-' exp								{
+													NodeAst* num = nodes.top();
+													nodes.pop();
+													num->setVal(num->getVal()*-1);
+													nodes.push(num);
+													//deQ(&head_codeQ,&tail_codeQ);
+													bodycode.push(constn(num->getVal()));
+												}
+		| 	'(' exp ')'							{	
+													$$ = $2;
+												}
+		;
+
+cond 	: 
+			NUM									{	
+													NodeAst* nconst = new NodeAst(-1,$1,'c',NULL,NULL);
+													bodycode.push(constn($1));
+													nodes.push(nconst);
+												}
+		| 	exp EQUAL exp 						{	
+													NodeAst* right = nodes.top();
+													nodes.pop();
+													NodeAst* left = nodes.top();
+													nodes.pop();
+													bodycode.push(condition(left->getAddress(),right->getAddress(),icount));
+												}
+		;
+
+var 	: 
+			ID 									{	
+													NodeAst* var = new NodeAst($1,-1,'v',NULL,NULL);
+													if(isReginit[$1] == 0){
+														initcode.push(init_var(var->getAddress()));
+														isReginit[$1] = 1;
+													}
+													nodes.push(var);
+												}   
+		;     
 %%
 
-node *getNewVar_int(char name,int val,var_int *next){
-	var_int * n = (var_int *)malloc(sizeof(var_int *));
-	n->name = name;
-	n->val = val;
-	n->next = next;
-	return n;
-}
-node *getNewVar_string(char* name,char[] val,int len,var_string *next){
-	var_string * n = (var_string *)malloc(sizeof(var_string *));
-	n->name = name;
-	n->val = val;
-	n->len = len;
-	n->next = next;
-	return n;
+void yyerror(const char *s) {
+	cout << "parse error!  Message: " << s << endl;
+	exit(-1);
 }
 
+int main(void) {
+  	FILE *myfile = fopen("a.txt", "r");
+  	if (!myfile) {
+    	cout << "I can't open file" << endl;
+    	return -1;
+  	}
+  	yyin = myfile;
+    do {
+    	yyparse();
+  	} while (!feof(yyin));
 
-void enQInt(char name,int val){
-	var_int *newVar = getNewVar_int(name,val,NULL);
-	if((*head_int) != NULL){
-		(*head_int)->next = newVar;
-	}
-	else{
-		head_int= &newVar;
-	}
-}
-
-int pop(){
-	if(topNode != NULL){
-		size--;
-		int temp = topNode->val;
-		node *tempNode = topNode->next;
-		free(topNode);
-		topNode = tempNode;
-		return temp;
-	}
-	else{printf("! ERROR\n");}
-	return 0;
-}
-
-int hasVar(char id){
-	if(arr[(int)id-97]!=0){
-		return 1;
-	}
-	return 0;
+  	ofstream file;
+  	file.open("assCode.s");
+  	file<<head()<<endl;
+  	while(!initcode.empty()){
+  		file<<initcode.front()<<endl;
+  		initcode.pop();
+  	}
+  	while(!bodycode.empty()){
+  		file<<bodycode.front()<<endl;
+  		bodycode.pop();
+  	}
+  	file<<foot()<<endl;
+   	while(!initstring.empty()){
+  		file<<initstring.front()<<endl;
+  		initstring.pop();
+  	}
+  	file.close();
+  	return 0;
 }
