@@ -1,0 +1,21 @@
+Loop $a 1 to 5{
+	Show $a
+	$b = 3*(4+1)-5
+	Show $b
+}
+if($a == 5){
+	$a = 60%6
+	$b = 5000
+}
+Show "A value is"
+Show $a
+Show "B value"
+Show $b
+$c = 4-8
+$d = -4
+$f = $c
+if($d == $c){
+	Show "d equal c"
+}
+Show $f
+Show 4/3
