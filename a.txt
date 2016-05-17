@@ -12,6 +12,7 @@ if($a == 5){
 	$b = 1000b
 	$c = 5ABC0h
 }
+shoe "3"
 Show "A value is"
 Show $a
 Show "B value"

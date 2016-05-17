@@ -1,3 +1,4 @@
+%option noyywrap
 %{
 #include "parse.tab.h"
 #include <iostream>
@@ -6,7 +7,7 @@ using namespace std;
 #define YY_DECL extern "C" int yylex()
 
 void comment(void);
-
+int count = 1;
 %}
 
 %%
@@ -44,16 +45,17 @@ $[a-z]													{
 "("														{	return '('; 	}
 ")"														{	return	')'; 	}
 ";"														{	return ';'; 	}
-"#"														{	comment();		}
+"#"														{	count++; comment();		}
 "{"														{	return '{';		}
 "}"														{	return '}';		}
-\"[a-zA-z_0-9' ']+\"										{	
+\"[a-zA-z_0-9' ']+\"									{	
 															yylval.strval = yytext;
 															return STRING;	
 														}
-"\n"													{	return END; 	}
+"\n"													{	count++; return END; 	}
 [ \t ' ' ]+ ;
-.
+.														{	cout<<"Error!! at line "<<count<<endl;
+															exit(-1); }
 %%
 
 void comment(void){

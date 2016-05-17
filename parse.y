@@ -1,5 +1,6 @@
 %{
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <queue>
@@ -13,7 +14,7 @@ using namespace std;
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
-void yyerror(const char *);
+extern "C" void yyerror(const char *);
 
 int isReginit[27] = {};
 int lcount = 0;
@@ -35,8 +36,8 @@ stack<NodeAst*> nodes;
 
 %token <dval> NUM
 %token <chval> ID
-%token <strval> STRING
-%token SHOW INT IF LOOP ASSIGN TO END ERROR
+%token <strval> STRING 
+%token SHOW INT IF LOOP ASSIGN TO END
 %left '+' '-' 
 %left '*' '/' '%' EQUAL
 %left '(' ')'
@@ -55,7 +56,7 @@ result 	:
 											}					
 		| 	result loop END 				{
 
-											}									
+											}								
 		;
 
 stas 	: 
@@ -209,7 +210,6 @@ void yyerror(const char *s) {
 	cout << "parse error!  Message: " << s << endl;
 	exit(-1);
 }
-int yywrap ( void ) { }
 int main(void) {
   	FILE *myfile = fopen("a.txt", "r");
   	if (!myfile) {
