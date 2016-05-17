@@ -104,11 +104,17 @@ LE0 :
 	pop %rax
 	movq %rax,-8(%rbp)
 
-	movq $5000,%rax
+	movq $8,%rax
 	push %rax
 
 	pop %rax
 	movq %rax,-16(%rbp)
+
+	movq $371648,%rax
+	push %rax
+
+	pop %rax
+	movq %rax,-24(%rbp)
 
 IF0 :
 

@@ -41,7 +41,6 @@ $[a-z]													{
 "/"														{ 	return '/'; }
 "=="													{	return EQUAL;	}
 "="														{	return ASSIGN;	}	
-"\n"													{	return END; 	}
 "("														{	return '('; 	}
 ")"														{	return	')'; 	}
 ";"														{	return ';'; 	}
@@ -52,6 +51,7 @@ $[a-z]													{
 															yylval.strval = yytext;
 															return STRING;	
 														}
+"\n"													{	return END; 	}
 [ \t ' ' ]+ ;
 .
 %%
@@ -60,11 +60,5 @@ void comment(void){
  	char c, c1;
  
  loop:
- 	while ((c = yyinput()) != '\\' && c != 0);
- 
- 	if ((c1 = yyinput()) != 'n' && c1 != 0)
- 	{
- 		goto loop;
- 	}
- 
+ 	while ((c = yyinput()) != '\n' && c != 0); 
 } 

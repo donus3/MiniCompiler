@@ -386,11 +386,11 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[47] =
     {   0,
-        0,    0,   27,   25,   24,   16,   25,   20,   25,   11,
-       17,   18,   12,    9,   10,   13,    6,    6,   19,   15,
-       25,   25,   25,   25,   25,   21,   22,   24,    0,    5,
+        0,    0,   27,   25,   24,   23,   25,   19,   25,   11,
+       16,   17,   12,    9,   10,   13,    6,    6,   18,   15,
+       25,   25,   25,   25,   25,   20,   21,   24,    0,    5,
         6,    6,    0,    7,    8,   14,    0,    0,    2,    4,
-       23,    0,    0,    3,    1,    0
+       22,    0,    0,    3,    1,    0
     } ;
 
 static yyconst YY_CHAR yy_ec[256] =
@@ -873,48 +873,48 @@ YY_RULE_SETUP
 {	return ASSIGN;	}	
 	YY_BREAK
 case 16:
-/* rule 16 can match eol */
 YY_RULE_SETUP
 #line 44 "lex.flex"
-{	return END; 	}
+{	return '('; 	}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 45 "lex.flex"
-{	return '('; 	}
+{	return	')'; 	}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 46 "lex.flex"
-{	return	')'; 	}
+{	return ';'; 	}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 47 "lex.flex"
-{	return ';'; 	}
+{	comment();		}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 48 "lex.flex"
-{	comment();		}
+{	return '{';		}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
 #line 49 "lex.flex"
-{	return '{';		}
+{	return '}';		}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 50 "lex.flex"
-{	return '}';		}
-	YY_BREAK
-case 23:
-YY_RULE_SETUP
-#line 51 "lex.flex"
 {	
 															yylval.strval = yytext;
 															return STRING;	
 														}
+	YY_BREAK
+case 23:
+/* rule 23 can match eol */
+YY_RULE_SETUP
+#line 54 "lex.flex"
+{	return END; 	}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
@@ -1940,11 +1940,5 @@ void comment(void){
  	char c, c1;
  
  loop:
- 	while ((c = yyinput()) != '\\' && c != 0);
- 
- 	if ((c1 = yyinput()) != 'n' && c1 != 0)
- 	{
- 		goto loop;
- 	}
- 
+ 	while ((c = yyinput()) != '\n' && c != 0); 
 } 
