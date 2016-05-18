@@ -210,8 +210,8 @@ void yyerror(const char *s) {
 	cout << "parse error!  Message: " << s << endl;
 	exit(-1);
 }
-int main(void) {
-  	FILE *myfile = fopen("a.txt", "r");
+int main(int argv,char* args[]) {
+  	FILE *myfile = fopen(args[1], "r");
   	if (!myfile) {
     	cout << "I can't open file" << endl;
     	return -1;

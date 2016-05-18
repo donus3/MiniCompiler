@@ -1,28 +1,15 @@
 # This is Janjira Lang
-#loop $a have value equal 1-5
-Loop $a 1 to 5{
-	#print
-	Show $a
-	$b = 3*(4+1)-5
-	Show $b
-}
-#condition can do just compare equal
-if($a == 5){
-	$a = 60%6
-	$b = 1000b
-	$c = 5ABC0h
-}
-shoe "3"
-Show "A value is"
+$a = 2Ah
+$b = 10010b
+Show "A value = "
 Show $a
-Show "B value"
+Show "B value = "
 Show $b
-$c = 4-8
-$d = -4
+$c = 4-8*3
+#$d = -4
 $f = $c
-if($d == $c){
-	Show "d equal c"
-}
+Show "Value of $f is "
 Show $f
 #divide result is int (floor float)
+Show "4/3 = "
 Show 4/3

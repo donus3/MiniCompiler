@@ -48,7 +48,7 @@ $[a-z]													{
 "#"														{	count++; comment();		}
 "{"														{	return '{';		}
 "}"														{	return '}';		}
-\"[a-zA-z_0-9' ']+\"									{	
+\"[a-zA-z_0-9' ']+?(\\.|[^\\"])*\"									{	
 															yylval.strval = yytext;
 															return STRING;	
 														}

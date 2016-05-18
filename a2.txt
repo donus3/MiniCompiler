@@ -1,0 +1,13 @@
+# This is Janjira Lang
+#loop $a have value equal 1-5
+Loop $a 1 to 5{
+	#print
+	Show $a
+	$b = 3*(4+(1+(5+1)))-$a
+	Show $b
+}
+Loop $s 5 to 10{
+	Show $s%5
+	$v = $s
+}
+Show $v

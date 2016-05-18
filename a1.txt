@@ -1,0 +1,12 @@
+$a = 1
+$b = $a
+if($a == $b){
+	Show "$a == $b is True"
+	$b = 3
+}
+if($a == 2){
+	Show "$a == 2 is True"
+}
+if($b == 3){
+	Show "$b == 1 is True"
+}
